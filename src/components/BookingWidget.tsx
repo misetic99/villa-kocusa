@@ -18,6 +18,7 @@ import {
 } from "date-fns";
 import { hr as hrLocale, enUS } from "date-fns/locale";
 import { useLanguage } from "@/lib/i18n/context";
+import { getPricePerNight } from "@/lib/rooms";
 
 type BookedRange = { checkIn: string; checkOut: string };
 
@@ -127,7 +128,8 @@ export default function BookingWidget({
     checkIn && checkOut
       ? Math.round((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24))
       : 0;
-  const total = nights * pricePerNight;
+  const effectivePricePerNight = getPricePerNight(pricePerNight, guests);
+  const total = nights * effectivePricePerNight;
 
   const monthStart = startOfMonth(viewMonth);
   const monthEnd = endOfMonth(viewMonth);
@@ -299,7 +301,7 @@ export default function BookingWidget({
                     highlighted ? "text-cream/80" : "text-ink-soft/60"
                   }`}
                 >
-                  {pricePerNight}€
+                  {effectivePricePerNight}€
                 </span>
               )}
             </button>
@@ -336,6 +338,11 @@ export default function BookingWidget({
             onChange={(e) => setGuests(Number(e.target.value))}
             className="mt-1 w-full rounded-lg border border-cream-line bg-cream px-3 py-2 font-sans text-sm text-ink outline-none focus:border-gold"
           />
+          {capacity > 2 && (
+            <p className="mt-1 font-sans text-xs text-ink-soft/70">
+              {t.rooms.extraGuestNote}
+            </p>
+          )}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">

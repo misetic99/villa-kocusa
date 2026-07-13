@@ -53,6 +53,7 @@ const hr = {
     detailKicker: "SOBA",
     amenitiesTitle: "Sadržaji",
     balcony: "balkon",
+    extraGuestNote: "+20 € za 3. gosta",
   },
   gallery: {
     kicker: "GALERIJA",
@@ -68,6 +69,8 @@ const hr = {
     emailTitle: "Email",
     checkTitle: "Prijava / odjava",
     checkText: "Prijava od 15:00, odjava do 10:00.",
+    mapTitle: "Lokacija",
+    mapOpenLink: "Otvori u Google mapama →",
   },
   contactForm: {
     name: "Ime i prezime",
@@ -175,6 +178,7 @@ const en: typeof hr = {
     detailKicker: "ROOM",
     amenitiesTitle: "Amenities",
     balcony: "balcony",
+    extraGuestNote: "+€20 for the 3rd guest",
   },
   gallery: {
     kicker: "GALLERY",
@@ -190,6 +194,8 @@ const en: typeof hr = {
     emailTitle: "Email",
     checkTitle: "Check-in / check-out",
     checkText: "Check-in from 3:00 PM, check-out until 10:00 AM.",
+    mapTitle: "Location",
+    mapOpenLink: "Open in Google Maps →",
   },
   contactForm: {
     name: "Full name",

@@ -35,6 +35,11 @@ export default function RoomDetailClient({ room }: { room: Room }) {
                 {room.pricePerNight} €
               </span>
               {room.discountedPricePerNight} € {t.rooms.perNight}
+              {room.capacity > 2 && (
+                <span className="ml-2 font-sans text-xs text-ink-soft/60">
+                  ({t.rooms.extraGuestNote})
+                </span>
+              )}
             </span>
           </div>
 

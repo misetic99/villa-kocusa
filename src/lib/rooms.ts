@@ -136,3 +136,9 @@ export function getRoomBySlug(slug: string): Room | undefined {
 export function getRoomById(id: string): Room | undefined {
   return rooms.find((r) => r.id === id);
 }
+
+export const EXTRA_GUEST_FEE = 20;
+
+export function getPricePerNight(basePricePerNight: number, guests: number): number {
+  return basePricePerNight + Math.max(0, guests - 2) * EXTRA_GUEST_FEE;
+}
