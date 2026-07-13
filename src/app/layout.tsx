@@ -1,0 +1,48 @@
+import type { Metadata } from "next";
+import { Cormorant_Garamond, Jost } from "next/font/google";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { LanguageProvider } from "@/lib/i18n/context";
+import "./globals.css";
+
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const jost = Jost({
+  variable: "--font-jost",
+  subsets: ["latin", "latin-ext"],
+  weight: ["300", "400", "500", "600"],
+});
+
+export const metadata: Metadata = {
+  title: {
+    default: "Villa Koćuša | Sobe",
+    template: "%s | Villa Koćuša",
+  },
+  description:
+    "Villa Koćuša – udobne sobe na hrvatskoj obali. Provjerite dostupnost i rezervirajte svoj boravak uz more.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html
+      lang="hr"
+      className={`${cormorant.variable} ${jost.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col bg-cream text-ink">
+        <LanguageProvider>
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </LanguageProvider>
+      </body>
+    </html>
+  );
+}

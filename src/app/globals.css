@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+:root {
+  --color-cream: #fbf6ec;
+  --color-cream-soft: #f6efe0;
+  --color-cream-line: #e6dac0;
+  --color-ink: #211c15;
+  --color-ink-soft: #4a4235;
+  --color-gold: #a67c27;
+  --color-gold-light: #f0dfa0;
+  --color-gold-dark: #8b7355;
+  --color-night: #1c1712;
+  --color-night-soft: #2b2419;
+}
+
+@theme inline {
+  --color-cream: var(--color-cream);
+  --color-cream-soft: var(--color-cream-soft);
+  --color-cream-line: var(--color-cream-line);
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-gold: var(--color-gold);
+  --color-gold-light: var(--color-gold-light);
+  --color-gold-dark: var(--color-gold-dark);
+  --color-night: var(--color-night);
+  --color-night-soft: var(--color-night-soft);
+
+  --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-jost), Arial, Helvetica, sans-serif;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+.text-gold-gradient {
+  background: linear-gradient(
+    90deg,
+    var(--color-gold) 0%,
+    var(--color-gold-light) 50%,
+    var(--color-gold) 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.gold-rule {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-gold) 50%,
+    transparent 100%
+  );
+  height: 1px;
+}
+
+::selection {
+  background: var(--color-gold-light);
+  color: var(--color-ink);
+}
