@@ -26,13 +26,13 @@ const hr = {
   home: {
     heroKicker: "DOBRODOŠLI U",
     heroText:
-      "Udobne sobe okružene maslinama i mediteranskim mirisima, samo nekoliko koraka od mora. Vaš savršen odmor počinje ovdje.",
+      "Udobne sobe okružene maslinama i mediteranskim mirisima, tik uz slap Koćuša. Vaš savršen odmor počinje ovdje.",
     heroCta: "Pogledajte sobe",
     heroContact: "Kontaktirajte nas",
     aboutKicker: "O VILI",
-    aboutTitle: "Mir, more i mediteranski ritam",
+    aboutTitle: "Mir, priroda i mediteranski ritam",
     aboutText:
-      "Villa Koćuša smještena je u mirnom dijelu obale, okružena stoljetnim maslinama. Četiri udobne sobe pažljivo su uređene kako bi svakom gostu ponudile osjećaj doma uz sav komfor malog butik-hotela. Bilo da putujete u dvoje ili u troje, ovdje ćete pronaći savršen kutak za odmor.",
+      "Villa Koćuša smještena je u neposrednoj blizini slapa Koćuša u blizini Ljubuškog. Osam udobnih soba pažljivo su uređene kako bi svakom gostu ponudile osjećaj doma.",
     roomsKicker: "SMJEŠTAJ",
     roomsTitle: "Naše sobe",
     amenitiesKicker: "SADRŽAJI",
@@ -154,13 +154,13 @@ const en: typeof hr = {
   home: {
     heroKicker: "WELCOME TO",
     heroText:
-      "Comfortable rooms surrounded by olive groves and Mediterranean scents, just steps from the sea. Your perfect getaway starts here.",
+      "Comfortable rooms surrounded by olive groves and Mediterranean scents, right by the Koćuša waterfall. Your perfect getaway starts here.",
     heroCta: "View our rooms",
     heroContact: "Contact us",
     aboutKicker: "ABOUT THE VILLA",
-    aboutTitle: "Peace, sea, and Mediterranean rhythm",
+    aboutTitle: "Peace, nature, and Mediterranean rhythm",
     aboutText:
-      "Villa Koćuša is set in a quiet part of the coast, surrounded by century-old olive trees. Four comfortable rooms are carefully furnished to give every guest a home-like feeling with all the comfort of a small boutique hotel. Whether you're travelling as a couple or as three, you'll find the perfect corner to unwind here.",
+      "Villa Koćuša is set right next to the Koćuša waterfall, near Ljubuški. Eight comfortable rooms are carefully furnished to give every guest a home-like feeling.",
     roomsKicker: "ACCOMMODATION",
     roomsTitle: "Our rooms",
     amenitiesKicker: "AMENITIES",

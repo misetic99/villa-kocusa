@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     template: "%s | Villa Koćuša",
   },
   description:
-    "Villa Koćuša – udobne sobe na hrvatskoj obali. Provjerite dostupnost i rezervirajte svoj boravak uz more.",
+    "Villa Koćuša – udobne sobe na slapu Koćuša u blizini Ljubuškog. Provjerite dostupnost i rezervirajte svoj boravak.",
 };
 
 export default function RootLayout({
