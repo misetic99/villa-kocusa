@@ -5,9 +5,19 @@ import Link from "next/link";
 import type { Room } from "@/lib/types";
 import { useLanguage } from "@/lib/i18n/context";
 
-export default function RoomCard({ room }: { room: Room }) {
+export default function RoomCard({
+  room,
+  price,
+  discountedPrice,
+}: {
+  room: Room;
+  price?: number;
+  discountedPrice?: number;
+}) {
   const { locale, t } = useLanguage();
   const cover = room.gallery[0];
+  const displayPrice = price ?? room.pricePerNight;
+  const displayDiscountedPrice = discountedPrice ?? room.discountedPricePerNight;
 
   return (
     <Link
@@ -47,9 +57,9 @@ export default function RoomCard({ room }: { room: Room }) {
         <div className="mt-auto flex items-center justify-between pt-3">
           <p className="font-display text-xl text-gold">
             <span className="mr-2 font-sans text-sm text-ink-soft/60 line-through">
-              {room.pricePerNight} €
+              {displayPrice} €
             </span>
-            {room.discountedPricePerNight} €
+            {displayDiscountedPrice} €
             <span className="font-sans text-xs text-ink-soft"> {t.rooms.perNight}</span>
           </p>
           <span className="font-sans text-sm tracking-wide text-gold underline-offset-4 group-hover:underline">

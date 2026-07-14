@@ -1,0 +1,7 @@
+node_modules
+.next
+.git
+.env*
+data/bookings.json
+data/messages.json
+npm-debug.log*

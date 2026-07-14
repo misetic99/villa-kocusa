@@ -1,18 +1,35 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { rooms } from "@/lib/rooms";
 import { heroPhoto } from "@/lib/gallery";
 import { AmenityIcon, amenityLabel } from "@/components/icons";
 import RoomCard from "@/components/RoomCard";
-import type { AmenityKey } from "@/lib/types";
+import type { AmenityKey, MonthlyPrice } from "@/lib/types";
 import { useLanguage } from "@/lib/i18n/context";
 
 const HIGHLIGHT_AMENITIES: AmenityKey[] = ["wifi", "ac", "tv", "parking", "terrace"];
 
 export default function Home() {
   const { locale, t } = useLanguage();
+  const [prices, setPrices] = useState<Record<string, Record<string, MonthlyPrice>>>({});
+
+  useEffect(() => {
+    async function loadPrices() {
+      try {
+        const res = await fetch("/api/room-prices");
+        const data = await res.json();
+        setPrices(data.prices ?? {});
+      } catch {
+        setPrices({});
+      }
+    }
+    loadPrices();
+  }, []);
+
+  const currentMonth = String(new Date().getMonth() + 1);
 
   return (
     <>
@@ -86,7 +103,12 @@ export default function Home() {
 
           <div className="mt-12 grid gap-8 sm:grid-cols-2 sm:max-w-3xl sm:mx-auto">
             {rooms.map((room) => (
-              <RoomCard key={room.id} room={room} />
+              <RoomCard
+                key={room.id}
+                room={room}
+                price={prices[room.id]?.[currentMonth]?.price}
+                discountedPrice={prices[room.id]?.[currentMonth]?.discountedPrice}
+              />
             ))}
           </div>
         </div>
@@ -104,9 +126,9 @@ export default function Home() {
           <div className="mx-auto mt-4 h-px w-16 gold-rule" />
         </div>
 
-        <div className="mt-12 grid grid-cols-2 gap-8 sm:grid-cols-3 md:grid-cols-6">
+        <div className="mt-12 flex flex-wrap justify-center gap-8">
           {HIGHLIGHT_AMENITIES.map((amenity) => (
-            <div key={amenity} className="flex flex-col items-center gap-3 text-center">
+            <div key={amenity} className="flex w-20 flex-col items-center gap-3 text-center">
               <span className="flex h-14 w-14 items-center justify-center rounded-full border border-gold/40 text-gold">
                 <AmenityIcon amenity={amenity} />
               </span>

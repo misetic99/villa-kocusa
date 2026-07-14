@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Neautoriziran pristup." }, { status: 401 });
   }
 
-  const bookings = await readBookings();
+  const bookings = (await readBookings()).filter((b) => b.status !== "deleted");
   bookings.sort((a, b) => a.checkIn.localeCompare(b.checkIn));
 
   return NextResponse.json({ bookings });

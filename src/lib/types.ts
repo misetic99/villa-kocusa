@@ -29,7 +29,7 @@ export type Room = {
   gallery: { src: string; label: string }[];
 };
 
-export type BookingStatus = "confirmed" | "cancelled";
+export type BookingStatus = "pending" | "confirmed" | "cancelled" | "deleted";
 
 export type Booking = {
   id: string;
@@ -42,8 +42,26 @@ export type Booking = {
   email: string;
   phone: string;
   message?: string;
+  breakfast?: boolean;
+  // Locked in at creation/edit time from the then-current prices, so later
+  // admin price changes never retroactively alter an existing booking.
+  // Optional because bookings created before this field existed lack it.
+  total?: number;
+  breakfastTotal?: number;
   status: BookingStatus;
+  lang?: "hr" | "en";
   createdAt: string;
+};
+
+export type UpdateBookingInput = {
+  checkIn?: string;
+  checkOut?: string;
+  guests?: number;
+  name?: string;
+  email?: string;
+  phone?: string;
+  message?: string;
+  breakfast?: boolean;
 };
 
 export type CreateBookingInput = {
@@ -55,5 +73,21 @@ export type CreateBookingInput = {
   email: string;
   phone: string;
   message?: string;
+  breakfast?: boolean;
   lang?: "hr" | "en";
+};
+
+// Admin-configurable accommodation price, per room, per calendar month (1-12).
+// discountedPrice is the rate actually charged, matching how the site has
+// always shown a crossed-out full price next to the active discounted one.
+export type MonthlyPrice = {
+  price: number;
+  discountedPrice: number;
+};
+
+export type RoomPriceSettings = Record<string, Record<string, MonthlyPrice>>;
+
+// Breakfast is a single flat rate that applies to every room, no monthly variation.
+export type BreakfastPrice = {
+  price: number;
 };

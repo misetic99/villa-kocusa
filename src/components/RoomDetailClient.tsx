@@ -1,6 +1,7 @@
 "use client";
 
-import type { Room } from "@/lib/types";
+import { useEffect, useState } from "react";
+import type { MonthlyPrice, Room } from "@/lib/types";
 import { AmenityIcon, amenityLabel } from "@/components/icons";
 import BookingWidget from "@/components/BookingWidget";
 import RoomGallery from "@/components/RoomGallery";
@@ -8,6 +9,26 @@ import { useLanguage } from "@/lib/i18n/context";
 
 export default function RoomDetailClient({ room }: { room: Room }) {
   const { locale, t } = useLanguage();
+  const [roomPrices, setRoomPrices] = useState<Record<string, MonthlyPrice> | null>(null);
+
+  useEffect(() => {
+    async function loadRoomPrices() {
+      try {
+        const res = await fetch("/api/room-prices");
+        const data = await res.json();
+        setRoomPrices(data.prices?.[room.id] ?? null);
+      } catch {
+        setRoomPrices(null);
+      }
+    }
+    loadRoomPrices();
+  }, [room.id]);
+
+  const currentMonth = String(new Date().getMonth() + 1);
+  const displayPrice = roomPrices?.[currentMonth] ?? {
+    price: room.pricePerNight,
+    discountedPrice: room.discountedPricePerNight,
+  };
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
@@ -32,9 +53,9 @@ export default function RoomDetailClient({ room }: { room: Room }) {
             </span>
             <span className="font-display text-lg text-gold">
               <span className="mr-2 font-sans text-sm text-ink-soft/60 line-through">
-                {room.pricePerNight} €
+                {displayPrice.price} €
               </span>
-              {room.discountedPricePerNight} € {t.rooms.perNight}
+              {displayPrice.discountedPrice} € {t.rooms.perNight}
               {room.capacity > 2 && (
                 <span className="ml-2 font-sans text-xs text-ink-soft/60">
                   ({t.rooms.extraGuestNote})
@@ -77,6 +98,7 @@ export default function RoomDetailClient({ room }: { room: Room }) {
             roomName={room.name[locale]}
             capacity={room.capacity}
             pricePerNight={room.discountedPricePerNight}
+            roomPrices={roomPrices}
           />
         </div>
       </div>

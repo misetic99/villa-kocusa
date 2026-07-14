@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createBooking } from "@/lib/bookings";
+import { sendNewBookingNotification } from "@/lib/mail";
 
 export async function POST(request: NextRequest) {
   let body: Record<string, unknown>;
@@ -9,7 +10,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Neispravan zahtjev." }, { status: 400 });
   }
 
-  const { roomId, checkIn, checkOut, guests, name, email, phone, message, lang } =
+  const { roomId, checkIn, checkOut, guests, name, email, phone, message, breakfast, lang } =
     body;
 
   if (
@@ -39,12 +40,16 @@ export async function POST(request: NextRequest) {
     email,
     phone,
     message: typeof message === "string" ? message : undefined,
+    breakfast: breakfast === true,
     lang: lang === "en" ? "en" : "hr",
   });
 
   if (!result.ok) {
     return NextResponse.json({ error: result.error }, { status: 409 });
   }
+
+  // Best-effort: a failed notification email must not fail the booking itself.
+  await sendNewBookingNotification(result.booking);
 
   return NextResponse.json({ booking: result.booking }, { status: 201 });
 }

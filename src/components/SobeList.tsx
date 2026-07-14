@@ -1,11 +1,29 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { rooms } from "@/lib/rooms";
 import RoomCard from "@/components/RoomCard";
 import { useLanguage } from "@/lib/i18n/context";
+import type { MonthlyPrice } from "@/lib/types";
 
 export default function SobeList() {
   const { t } = useLanguage();
+  const [prices, setPrices] = useState<Record<string, Record<string, MonthlyPrice>>>({});
+
+  useEffect(() => {
+    async function loadPrices() {
+      try {
+        const res = await fetch("/api/room-prices");
+        const data = await res.json();
+        setPrices(data.prices ?? {});
+      } catch {
+        setPrices({});
+      }
+    }
+    loadPrices();
+  }, []);
+
+  const currentMonth = String(new Date().getMonth() + 1);
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-20 sm:px-8">
@@ -24,7 +42,12 @@ export default function SobeList() {
 
       <div className="mt-14 grid gap-8 sm:grid-cols-2 sm:max-w-3xl sm:mx-auto">
         {rooms.map((room) => (
-          <RoomCard key={room.id} room={room} />
+          <RoomCard
+            key={room.id}
+            room={room}
+            price={prices[room.id]?.[currentMonth]?.price}
+            discountedPrice={prices[room.id]?.[currentMonth]?.discountedPrice}
+          />
         ))}
       </div>
     </div>

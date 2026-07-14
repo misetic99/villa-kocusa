@@ -1,8 +1,10 @@
 import { randomUUID } from "crypto";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
-import { getRoomById } from "./rooms";
-import type { Booking, CreateBookingInput } from "./types";
+import { getPricePerNight, getRoomById } from "./rooms";
+import { getFullRoomPriceTable } from "./roomPrices";
+import { getBreakfastPrice } from "./breakfast";
+import type { Booking, CreateBookingInput, UpdateBookingInput } from "./types";
 import type { Locale } from "./i18n/dictionary";
 
 const ERRORS = {
@@ -55,6 +57,46 @@ async function writeBookings(bookings: Booking[]) {
   await writeFile(DATA_FILE, JSON.stringify(bookings, null, 2) + "\n", "utf-8");
 }
 
+function nightsBetween(checkIn: string, checkOut: string): Date[] {
+  const nights: Date[] = [];
+  let current = new Date(`${checkIn}T00:00:00`);
+  const end = new Date(`${checkOut}T00:00:00`);
+  while (current < end) {
+    nights.push(current);
+    current = new Date(current.getTime() + 24 * 60 * 60 * 1000);
+  }
+  return nights;
+}
+
+// Computed from the currently configured prices — called at creation and at
+// edit time so the stored total reflects what was actually offered then,
+// rather than being recalculated (and silently drifting) on every read.
+async function computeBookingTotal(
+  roomId: string,
+  checkIn: string,
+  checkOut: string,
+  guests: number,
+  breakfast: boolean
+): Promise<{ total: number; breakfastTotal: number }> {
+  const nights = nightsBetween(checkIn, checkOut);
+  const roomPriceTable = await getFullRoomPriceTable();
+  const monthlyPrices = roomPriceTable[roomId] ?? {};
+
+  const roomTotal = nights.reduce((sum, night) => {
+    const month = String(night.getMonth() + 1);
+    const base = monthlyPrices[month]?.discountedPrice ?? 0;
+    return sum + getPricePerNight(base, guests);
+  }, 0);
+
+  let breakfastTotal = 0;
+  if (breakfast) {
+    const { price } = await getBreakfastPrice();
+    breakfastTotal = nights.length * guests * price;
+  }
+
+  return { total: roomTotal + breakfastTotal, breakfastTotal };
+}
+
 function rangesOverlap(
   aStart: string,
   aEnd: string,
@@ -64,12 +106,16 @@ function rangesOverlap(
   return aStart < bEnd && bStart < aEnd;
 }
 
+// Pending bookings block the calendar just like confirmed ones — the slot is
+// reserved from the moment a guest books it, before an admin ever confirms it.
 export async function getBookingsForRoom(
   roomId: string
 ): Promise<Booking[]> {
   const all = await readBookings();
   return all.filter(
-    (b) => b.roomId === roomId && b.status === "confirmed"
+    (b) =>
+      b.roomId === roomId &&
+      (b.status === "pending" || b.status === "confirmed")
   );
 }
 
@@ -134,6 +180,15 @@ export async function createBooking(
     return { ok: false, error: err.conflict };
   }
 
+  const breakfast = input.breakfast === true;
+  const { total, breakfastTotal } = await computeBookingTotal(
+    input.roomId,
+    input.checkIn,
+    input.checkOut,
+    input.guests,
+    breakfast
+  );
+
   const booking: Booking = {
     id: randomUUID(),
     code: generateReservationCode(),
@@ -145,7 +200,11 @@ export async function createBooking(
     email: input.email.trim(),
     phone: input.phone.trim(),
     message: input.message?.trim() || undefined,
-    status: "confirmed",
+    breakfast,
+    total,
+    breakfastTotal,
+    status: "pending",
+    lang: input.lang === "en" ? "en" : "hr",
     createdAt: new Date().toISOString(),
   };
 
@@ -163,4 +222,110 @@ export async function cancelBooking(id: string): Promise<boolean> {
   all[idx].status = "cancelled";
   await writeBookings(all);
   return true;
+}
+
+export async function confirmBooking(id: string): Promise<Booking | null> {
+  const all = await readBookings();
+  const idx = all.findIndex((b) => b.id === id);
+  if (idx === -1) return null;
+  all[idx].status = "confirmed";
+  await writeBookings(all);
+  return all[idx];
+}
+
+// Soft delete: the admin "Obriši" action just marks the record so it drops
+// out of the admin list, but the row stays in bookings.json for the record.
+export async function deleteBooking(id: string): Promise<boolean> {
+  const all = await readBookings();
+  const idx = all.findIndex((b) => b.id === id);
+  if (idx === -1) return false;
+  all[idx].status = "deleted";
+  await writeBookings(all);
+  return true;
+}
+
+export async function updateBooking(
+  id: string,
+  input: UpdateBookingInput,
+  lang: Locale = "hr"
+): Promise<BookingResult> {
+  const err = ERRORS[lang];
+  const all = await readBookings();
+  const idx = all.findIndex((b) => b.id === id);
+  if (idx === -1) {
+    return { ok: false, error: lang === "en" ? "Booking not found." : "Rezervacija nije pronađena." };
+  }
+
+  const current = all[idx];
+  const room = getRoomById(current.roomId);
+  if (!room) {
+    return { ok: false, error: err.roomNotFound };
+  }
+
+  const checkIn = input.checkIn ?? current.checkIn;
+  const checkOut = input.checkOut ?? current.checkOut;
+  const guests = input.guests ?? current.guests;
+  const name = (input.name ?? current.name).trim();
+  const email = (input.email ?? current.email).trim();
+  const phone = (input.phone ?? current.phone).trim();
+  const message = input.message !== undefined ? input.message.trim() || undefined : current.message;
+  const breakfast = input.breakfast !== undefined ? input.breakfast : current.breakfast;
+
+  if (!isValidDateString(checkIn) || !isValidDateString(checkOut)) {
+    return { ok: false, error: err.invalidDate };
+  }
+
+  if (checkOut <= checkIn) {
+    return { ok: false, error: err.checkoutBeforeCheckin };
+  }
+
+  if (guests < 1 || guests > room.capacity) {
+    return { ok: false, error: err.guestRange(room.capacity) };
+  }
+
+  if (!name || !email || !phone) {
+    return { ok: false, error: err.required };
+  }
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(email)) {
+    return { ok: false, error: err.invalidEmail };
+  }
+
+  const conflict = all.some(
+    (b) =>
+      b.id !== id &&
+      b.roomId === current.roomId &&
+      (b.status === "pending" || b.status === "confirmed") &&
+      rangesOverlap(checkIn, checkOut, b.checkIn, b.checkOut)
+  );
+  if (conflict) {
+    return { ok: false, error: err.conflict };
+  }
+
+  const { total, breakfastTotal } = await computeBookingTotal(
+    current.roomId,
+    checkIn,
+    checkOut,
+    guests,
+    breakfast === true
+  );
+
+  const updated: Booking = {
+    ...current,
+    checkIn,
+    checkOut,
+    guests,
+    name,
+    email,
+    phone,
+    message,
+    breakfast,
+    total,
+    breakfastTotal,
+  };
+  all[idx] = updated;
+  await writeBookings(all);
+
+  return { ok: true, booking: updated };
 }

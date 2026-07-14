@@ -1,0 +1,15 @@
+services:
+  villa-kocusa:
+    build:
+      context: .
+      args:
+        ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+        RESEND_API_KEY: ${RESEND_API_KEY}
+        MAIL_FROM: ${MAIL_FROM}
+        BOOKING_NOTIFY_EMAILS: ${BOOKING_NOTIFY_EMAILS}
+    image: villa-kocusa:latest
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
