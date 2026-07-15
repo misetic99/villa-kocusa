@@ -5,6 +5,7 @@ import { getRoomById } from "@/lib/rooms";
 import type { Booking } from "@/lib/types";
 import RoomPrices from "./RoomPrices";
 import BreakfastPrice from "./BreakfastPrice";
+import BlockRoom from "./BlockRoom";
 
 type EditForm = {
   checkIn: string;
@@ -22,6 +23,7 @@ const STATUS_LABELS: Record<Booking["status"], string> = {
   confirmed: "potvrđeno",
   cancelled: "otkazano",
   deleted: "obrisano",
+  blocked: "blokirano",
 };
 
 const STATUS_STYLES: Record<Booking["status"], string> = {
@@ -29,6 +31,7 @@ const STATUS_STYLES: Record<Booking["status"], string> = {
   confirmed: "bg-gold-light/50 text-gold-dark",
   cancelled: "bg-cream-line text-ink-soft",
   deleted: "bg-cream-line text-ink-soft",
+  blocked: "bg-cream-line text-ink-soft",
 };
 
 export default function AdminPage() {
@@ -97,6 +100,16 @@ export default function AdminPage() {
     setPendingActionId(id);
     try {
       await fetch(`/api/admin/bookings/${id}/confirm`, { method: "POST" });
+      await loadBookings();
+    } finally {
+      setPendingActionId(null);
+    }
+  }
+
+  async function handleRelease(id: string) {
+    setPendingActionId(id);
+    try {
+      await fetch(`/api/admin/bookings/${id}`, { method: "DELETE" });
       await loadBookings();
     } finally {
       setPendingActionId(null);
@@ -199,6 +212,9 @@ export default function AdminPage() {
     );
   }
 
+  const visibleBookings = bookings.filter((b) => b.status !== "blocked");
+  const blocks = bookings.filter((b) => b.status === "blocked");
+
   return (
     <div className="mx-auto max-w-5xl px-5 py-16 sm:px-8">
       <div className="flex items-center justify-between">
@@ -212,7 +228,7 @@ export default function AdminPage() {
         </button>
       </div>
 
-      {bookings.length === 0 ? (
+      {visibleBookings.length === 0 ? (
         <p className="mt-10 font-sans text-sm text-ink-soft">
           Trenutno nema rezervacija.
         </p>
@@ -234,7 +250,7 @@ export default function AdminPage() {
               </tr>
             </thead>
             <tbody>
-              {bookings.map((b) => (
+              {visibleBookings.map((b) => (
                 <Fragment key={b.id}>
                   <tr className="border-b border-cream-line last:border-0">
                     <td className="px-4 py-3 font-medium text-gold">{b.code}</td>
@@ -432,6 +448,13 @@ export default function AdminPage() {
           </table>
         </div>
       )}
+
+      <BlockRoom
+        blocks={blocks}
+        pendingActionId={pendingActionId}
+        onRelease={handleRelease}
+        onCreated={loadBookings}
+      />
 
       <RoomPrices />
       <BreakfastPrice />

@@ -29,7 +29,7 @@ export type Room = {
   gallery: { src: string; label: string }[];
 };
 
-export type BookingStatus = "pending" | "confirmed" | "cancelled" | "deleted";
+export type BookingStatus = "pending" | "confirmed" | "cancelled" | "deleted" | "blocked";
 
 export type Booking = {
   id: string;

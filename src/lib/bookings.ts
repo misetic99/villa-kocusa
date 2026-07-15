@@ -108,6 +108,8 @@ function rangesOverlap(
 
 // Pending bookings block the calendar just like confirmed ones — the slot is
 // reserved from the moment a guest books it, before an admin ever confirms it.
+// Manually blocked ranges (owner marking a room occupied, e.g. from an
+// external Booking.com reservation) block it the same way.
 export async function getBookingsForRoom(
   roomId: string
 ): Promise<Booking[]> {
@@ -115,7 +117,7 @@ export async function getBookingsForRoom(
   return all.filter(
     (b) =>
       b.roomId === roomId &&
-      (b.status === "pending" || b.status === "confirmed")
+      (b.status === "pending" || b.status === "confirmed" || b.status === "blocked")
   );
 }
 
@@ -123,13 +125,13 @@ function isValidDateString(value: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value));
 }
 
-function generateReservationCode(): string {
+function generateReservationCode(prefix: string = "VK"): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let code = "";
   for (let i = 0; i < 6; i++) {
     code += chars[Math.floor(Math.random() * chars.length)];
   }
-  return `VK-${code}`;
+  return `${prefix}-${code}`;
 }
 
 export type BookingResult =
@@ -205,6 +207,63 @@ export async function createBooking(
     breakfastTotal,
     status: "pending",
     lang: input.lang === "en" ? "en" : "hr",
+    createdAt: new Date().toISOString(),
+  };
+
+  const all = await readBookings();
+  all.push(booking);
+  await writeBookings(all);
+
+  return { ok: true, booking };
+}
+
+// Admin-only: mark a room occupied for a date range without a real guest
+// booking (e.g. mirroring a reservation made through Booking.com). Reuses
+// the same overlap check as guest bookings so it can't double-book a room,
+// and shows up in getBookingsForRoom / the public availability endpoint
+// exactly like a normal booking would.
+export async function createBlock(input: {
+  roomId: string;
+  checkIn: string;
+  checkOut: string;
+  note?: string;
+}): Promise<BookingResult> {
+  const err = ERRORS.hr;
+
+  const room = getRoomById(input.roomId);
+  if (!room) {
+    return { ok: false, error: err.roomNotFound };
+  }
+
+  if (!isValidDateString(input.checkIn) || !isValidDateString(input.checkOut)) {
+    return { ok: false, error: err.invalidDate };
+  }
+
+  if (input.checkOut <= input.checkIn) {
+    return { ok: false, error: err.checkoutBeforeCheckin };
+  }
+
+  const existing = await getBookingsForRoom(input.roomId);
+  const conflict = existing.some((b) =>
+    rangesOverlap(input.checkIn, input.checkOut, b.checkIn, b.checkOut)
+  );
+  if (conflict) {
+    return { ok: false, error: err.conflict };
+  }
+
+  const booking: Booking = {
+    id: randomUUID(),
+    code: generateReservationCode("BLK"),
+    roomId: input.roomId,
+    checkIn: input.checkIn,
+    checkOut: input.checkOut,
+    guests: room.capacity,
+    name: input.note?.trim() || "Blokirano",
+    email: "",
+    phone: "",
+    breakfast: false,
+    status: "blocked",
+    lang: "hr",
     createdAt: new Date().toISOString(),
   };
 
