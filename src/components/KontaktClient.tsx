@@ -42,8 +42,8 @@ export default function KontaktClient() {
           <div>
             <h2 className="font-display text-xl text-ink">{t.kontakt.emailTitle}</h2>
             <p className="mt-2 font-sans text-sm text-ink-soft">
-              <a href="mailto:info@villakocusa.hr" className="hover:text-gold">
-                info@villakocusa.hr
+              <a href="mailto:info@villakocusa.com" className="hover:text-gold">
+                info@villakocusa.com
               </a>
             </p>
           </div>
@@ -63,7 +63,7 @@ export default function KontaktClient() {
         <div className="mt-4 overflow-hidden rounded-2xl border border-cream-line">
           <iframe
             title="Villa Koćuša – lokacija"
-            src="https://www.google.com/maps?q=43.2488226,17.4508123&z=16&output=embed"
+            src="https://www.google.com/maps?cid=1045175348704459457&z=16&output=embed"
             width="100%"
             height="380"
             style={{ border: 0 }}

@@ -41,10 +41,10 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="mailto:info@villakocusa.hr"
+                  href="mailto:info@villakocusa.com"
                   className="hover:text-gold-light"
                 >
-                  info@villakocusa.hr
+                  info@villakocusa.com
                 </a>
               </li>
             </ul>
