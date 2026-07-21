@@ -47,13 +47,23 @@ export default function AdminPage() {
   const [editError, setEditError] = useState<string | null>(null);
 
   async function loadBookings() {
-    const res = await fetch("/api/admin/bookings");
-    if (res.status === 401) {
+    let res: Response;
+    try {
+      res = await fetch("/api/admin/bookings", { cache: "no-store" });
+    } catch {
       setStatus("guest");
       return;
     }
-    const data = await res.json();
-    setBookings(data.bookings ?? []);
+    if (!res.ok) {
+      setStatus("guest");
+      return;
+    }
+    const data = await res.json().catch(() => null);
+    if (!data || !Array.isArray(data.bookings)) {
+      setStatus("guest");
+      return;
+    }
+    setBookings(data.bookings);
     setStatus("authed");
   }
 
