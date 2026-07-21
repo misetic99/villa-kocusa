@@ -7,5 +7,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const prices = await getFullRoomPriceTable();
-  return NextResponse.json({ prices });
+  return NextResponse.json(
+    { prices },
+    { headers: { "Cache-Control": "no-store, no-cache, must-revalidate" } }
+  );
 }

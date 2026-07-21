@@ -12,7 +12,7 @@ export default function BreakfastPrice() {
   async function loadPrice() {
     setLoading(true);
     try {
-      const res = await fetch("/api/breakfast-price");
+      const res = await fetch("/api/breakfast-price", { cache: "no-store" });
       const data = await res.json();
       setPrice(String(data.price ?? 10));
     } finally {

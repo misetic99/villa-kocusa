@@ -7,5 +7,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const breakfast = await getBreakfastPrice();
-  return NextResponse.json(breakfast);
+  return NextResponse.json(breakfast, {
+    headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+  });
 }

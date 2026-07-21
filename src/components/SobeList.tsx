@@ -13,7 +13,7 @@ export default function SobeList() {
   useEffect(() => {
     async function loadPrices() {
       try {
-        const res = await fetch("/api/room-prices");
+        const res = await fetch("/api/room-prices", { cache: "no-store" });
         const data = await res.json();
         setPrices(data.prices ?? {});
       } catch {

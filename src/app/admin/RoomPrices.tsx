@@ -33,7 +33,7 @@ export default function RoomPrices() {
   async function loadPrices() {
     setLoading(true);
     try {
-      const res = await fetch("/api/room-prices");
+      const res = await fetch("/api/room-prices", { cache: "no-store" });
       const data = await res.json();
       setPrices(data.prices ?? {});
     } finally {

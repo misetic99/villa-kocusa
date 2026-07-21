@@ -14,7 +14,7 @@ export default function RoomDetailClient({ room }: { room: Room }) {
   useEffect(() => {
     async function loadRoomPrices() {
       try {
-        const res = await fetch("/api/room-prices");
+        const res = await fetch("/api/room-prices", { cache: "no-store" });
         const data = await res.json();
         setRoomPrices(data.prices?.[room.id] ?? null);
       } catch {

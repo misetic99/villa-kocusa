@@ -19,5 +19,8 @@ export async function GET(request: NextRequest) {
     checkOut: b.checkOut,
   }));
 
-  return NextResponse.json({ bookedRanges });
+  return NextResponse.json(
+    { bookedRanges },
+    { headers: { "Cache-Control": "no-store, no-cache, must-revalidate" } }
+  );
 }

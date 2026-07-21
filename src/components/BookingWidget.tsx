@@ -83,7 +83,8 @@ export default function BookingWidget({
     setLoadingAvailability(true);
     try {
       const res = await fetch(
-        `/api/availability?roomId=${encodeURIComponent(roomId)}&lang=${locale}`
+        `/api/availability?roomId=${encodeURIComponent(roomId)}&lang=${locale}`,
+        { cache: "no-store" }
       );
       const data = await res.json();
       setBookedRanges(data.bookedRanges ?? []);
@@ -94,7 +95,7 @@ export default function BookingWidget({
 
   async function loadBreakfastPrice() {
     try {
-      const res = await fetch("/api/breakfast-price");
+      const res = await fetch("/api/breakfast-price", { cache: "no-store" });
       const data = await res.json();
       setBreakfastPrice(typeof data.price === "number" ? data.price : FALLBACK_BREAKFAST_PRICE);
     } catch {
